@@ -11,9 +11,11 @@ class SubjectStudent extends Model
 
     protected $fillable = [
         'role_user_id',
-        'subject_id',
+        'instructor_subject_id',
     ];
-    public function subject(){
-        return $this->belongsTo(Subject::class,'subject_id','id');
+    public function instructorSubjectId(){
+        return $this->belongsTo(InstructorSubject::class,'instructor_subject_id','id');
     }
+
+
 }
