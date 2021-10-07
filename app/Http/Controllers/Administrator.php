@@ -9,11 +9,10 @@ use App\Models\Subject;
 use App\Imports\UsersImport;
 use Illuminate\Http\Request;
 use App\Imports\StudentImport;
-use App\Models\StudentSection;
-use App\Models\SubjectStudent;
 use Illuminate\Validation\Rule;
 use App\Imports\InstructorImport;
 use App\Models\InstructorSubject;
+use App\Models\SubjectStudent;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Maatwebsite\Excel\Facades\Excel;
@@ -215,15 +214,14 @@ class Administrator extends Controller
 
     //Section
     public function viewSection(){
-        $studentSection = StudentSection::all();
-        return view('pages.admin.section.view-section',compact('studentSection'));
+        $section = Section::all();
+        return view('pages.admin.section.view-section',compact('section'));
     }
 
     public function viewAddSection(Request $request){
 
         $validateData = $request->validate([
             'section' => ['required','unique:sections', 'max:255'],
-            'file' => ['required'],
         ]);
         $section = new Section();
         $section->section = $request->section;
@@ -330,160 +328,7 @@ class Administrator extends Controller
 
     //Assign Subject->Student
     public function viewAssignStudentSubject(){
-        $assign = SubjectStudent::select('instructor_subject_id')->groupBy('instructor_subject_id')->get();
-        $instructor = User::whereRoleIs('instructor')->get();
-        $subject = Subject::all();
-        
-        $subjectName = array();
-        $instructorName= array();
-        $instructorSubject = InstructorSubject::all();
-        for($i=0;$i<count($assign);$i++){
-            for($j=0;$j<count($instructorSubject);$j++){
-                if($assign[$i]['instructor_subject_id']==$instructorSubject[$j]['id']){
-                    for($x=0;$x<count($subject);$x++){
-                        if($instructorSubject[$j]['subject_id']==$subject[$x]['id']){
-                            array_push($subjectName, $subject[$x]['subject']);
-                        }
-                    }
-                    for($x=0;$x<count($instructor);$x++){
-                        if($instructorSubject[$j]['role_user_id']==$instructor[$x]['id']){
-                            array_push($instructorName, $instructor[$x]['first_name'].' '.$instructor[$x]['last_name']);
-                        }
-                    }
-                }
-            }
-        }
-
-        // dd($instructorName);
-        return view('pages.admin.assign.student-subject.view-student-subject',compact('assign','subjectName','instructorName'));
+        $assign = SubjectStudent::select('subject_id')->groupBy('subject_id')->get();
+        return view('pages.admin.assign.student-subject.view-student-subject',compact('assign'));
     }
-
-    public function viewAddPageStudentSubject(){
-        $student = User::whereRoleIs('student')->get();
-        $instructor = User::whereRoleIs('instructor')->get();
-        $subject = Subject::all();
-        
-        $subjectName = array();
-        $instructorName= array();
-        $instructorSubject = InstructorSubject::all();
-        for($i=0;$i<count($instructorSubject);$i++){
-            for($x=0;$x<count($subject);$x++){
-                if($instructorSubject[$i]['subject_id']==$subject[$x]['id']){
-                    
-                    for($j=0;$j<count($instructor);$j++){
-                        if($instructorSubject[$i]['role_user_id']==$instructor[$j]['id']){
-                            array_push($subjectName, $subject[$x]['subject']);
-                            array_push($instructorName, $instructor[$j]['first_name'].' '.$instructor[$x]['last_name']);
-                        }
-                    }
-                }
-            }
-            
-        }
-
-        // dd($instructorName);
-        return view('pages.admin.assign.student-subject.create-student-subject',compact('subjectName','instructorName','instructorSubject','student'));
-    }
-
-    public function viewAddStudentSubject(Request $request){
-
-        $validateData = $request->validate([
-            'instructor_subject_id' => ['required','max:255'],
-            'student_id' => ['required','max:255'],
-        ]);
-
-        $countStudent = count($request->student_id);
-        if($countStudent != NULL){
-            for($i=0;$i<$countStudent;$i++){
-                $instructorSubject = new SubjectStudent();
-                $instructorSubject->instructor_subject_id=$request->instructor_subject_id;
-                $instructorSubject->role_user_id=$request->student_id[$i];
-                $instructorSubject->save();
-            }
-        }
-        return redirect()->route('view.administrator.assign.subject.student')->with('success','Assign Added Successfully!');
-    }
-
-    public function viewEditStudentSubject($id){
-        $student = User::whereRoleIs('student')->get();
-        $instructor = User::whereRoleIs('instructor')->get();
-        $subject = Subject::all();
-        $studentSubject = SubjectStudent::all();
-
-
-        $subjectName = array();
-        $instructorName= array();
-        $instructorSubject = InstructorSubject::all();
-        for($i=0;$i<count($instructorSubject);$i++){
-            for($x=0;$x<count($subject);$x++){
-                if($instructorSubject[$i]['subject_id']==$subject[$x]['id']){
-                    
-                    for($j=0;$j<count($instructor);$j++){
-                        if($instructorSubject[$i]['role_user_id']==$instructor[$j]['id']){
-                            array_push($subjectName, $subject[$x]['subject']);
-                            array_push($instructorName, $instructor[$j]['first_name'].' '.$instructor[$x]['last_name']);
-                        }
-                    }
-                }
-            }
-            
-        }
-
-        $instructorSubjectFind = InstructorSubject::find($id);
-        // dd($instructorSubject->toArray());
-        return view('pages.admin.assign.student-subject.edit-student-subject',compact('subjectName','instructorName','instructorSubject','student','instructorSubjectFind','studentSubject'));
-
-    }
-
-    public function viewUpdateStudentSubject(Request $request, $id){
-        $validateData = $request->validate([
-            'instructor_subject_id' => ['required','max:255'],
-            'student_id' => ['required','max:255'],
-        ]);
-        SubjectStudent::where('instructor_subject_id',$id)->delete();
-        $countStudent = count($request->student_id);
-        if($countStudent != NULL){
-            for($i=0;$i<$countStudent;$i++){
-                $instructorSubject = new SubjectStudent();
-                $instructorSubject->instructor_subject_id=$request->instructor_subject_id;
-                $instructorSubject->role_user_id=$request->student_id[$i];
-                $instructorSubject->save();
-            }
-        }
-        return redirect()->route('view.administrator.assign.subject.student')->with('success','Assign Updated Successfully!');
-    }
-
-    public function viewDeleteStudentSubject($id){
-        SubjectStudent::where('instructor_subject_id',$id)->delete();
-        return redirect()->route('view.administrator.assign.subject.student')->with('success','Assign Deleted Successfully!');
-    }
-
-    public function viewDetailsPageStudentSubject($id){
-        $student = User::whereRoleIs('student')->get();
-        $instructor = User::whereRoleIs('instructor')->get();
-        $subject = Subject::all();
-        $studentSubject = SubjectStudent::all();
-
-
-        $subjectName = array();
-        $instructorName= array();
-        $instructorSubject = InstructorSubject::all();
-        for($i=0;$i<count($instructorSubject);$i++){
-            for($x=0;$x<count($subject);$x++){
-                if($instructorSubject[$i]['subject_id']==$subject[$x]['id']){
-                    
-                    for($j=0;$j<count($instructor);$j++){
-                        if($instructorSubject[$i]['role_user_id']==$instructor[$j]['id']){
-                            array_push($subjectName, $subject[$x]['subject']);
-                            array_push($instructorName, $instructor[$j]['first_name'].' '.$instructor[$x]['last_name']);
-                        }
-                    }
-                }
-            }
-            
-        }
-
-        return view('pages.admin.assign.subject-instructor.details-subject-instructor',compact('assign','subject'));
-    }
-
 }
