@@ -10,6 +10,7 @@ use Maatwebsite\Excel\Validators\Failure;
 use Maatwebsite\Excel\Concerns\SkipsOnFailure;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithValidation;
+use Maatwebsite\Excel\Concerns\Importable;
 
 class StudentImport implements ToModel,WithHeadingRow,WithValidation,SkipsOnFailure
 {
@@ -18,6 +19,7 @@ class StudentImport implements ToModel,WithHeadingRow,WithValidation,SkipsOnFail
     *
     * @return \Illuminate\Database\Eloquent\Model|null
     */
+    use Importable;
     public function model(array $row)
     {
         $password = Carbon::now()->format('m-d-Y');
@@ -45,4 +47,5 @@ class StudentImport implements ToModel,WithHeadingRow,WithValidation,SkipsOnFail
     {
         
     }
+
 }

@@ -13,6 +13,7 @@ use App\Models\StudentSection;
 use App\Models\SubjectStudent;
 use Illuminate\Validation\Rule;
 use App\Imports\InstructorImport;
+use App\Models\InstructorSectionSubject;
 use App\Models\InstructorSubject;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -215,21 +216,67 @@ class Administrator extends Controller
 
     //Section
     public function viewSection(){
-        $studentSection = StudentSection::all();
+        $studentSection = StudentSection::select('section_id')->groupBy('section_id')->get();
         return view('pages.admin.section.view-section',compact('studentSection'));
     }
 
     public function viewAddSection(Request $request){
-
         $validateData = $request->validate([
             'section' => ['required','unique:sections', 'max:255'],
             'file' => ['required'],
         ]);
-        $section = new Section();
-        $section->section = $request->section;
-        $section->save();
+        $file = $request->file('file')->store('import');
+        $studentList = (new StudentImport)->toArray($file);
+        Excel::import(new StudentImport,$file);
+        $student = User::whereRoleIs('student')->get();
+        $studentSectionList = StudentSection::all();
 
-        return redirect()->route('view.administrator.section')->with('success','Section Added Successfully!');
+        if($studentSectionList->isEmpty()){
+            $section = new Section();
+            $section->section = $request->section;
+            $section->save();
+
+            for($y=0;$y<count($studentList[0]);$y++){
+                $studentSection = new StudentSection();
+                $studentSection->section_id=$section->id;
+                for($i=0;$i<count($student);$i++){
+                    if($student[$i]['username']==$studentList[0][$y]['username']){
+                        $studentSection->student_id=$student[$i]['id'];
+                    }
+                }
+                
+                $studentSection->save();
+            }
+            return redirect()->route('view.administrator.section')->with('success','Section and Student Added Successfully!');
+
+        }else{
+            $section = new Section();
+            $section->section = $request->section;
+            $section->save();
+
+            for($y=0;$y<count($studentList[0]);$y++){
+
+                $studentUsername = User::where('username', $studentList[0][$y]['username'])->first();
+                
+                $studentID = StudentSection::where('student_id', $studentUsername->id)->first();
+
+                
+                if($studentID==null){
+                    $studentSection = new StudentSection();
+                    $studentSection->section_id=$section->id;
+                    for($i=0;$i<count($student);$i++){
+                        if($student[$i]['username']==$studentList[0][$y]['username']){
+                            $studentSection->student_id=$student[$i]['id'];
+                        }
+                    }
+                    
+                    $studentSection->save();
+                    
+                }
+                // echo $studentList[0][$y]['username']."\n";
+            }
+            return redirect()->route('view.administrator.section')->with('failed','Some of student records are already registerd!');
+        }
     }
     public function viewEditSection($id){
         $section = Section::find($id);
@@ -251,8 +298,95 @@ class Administrator extends Controller
         return redirect()->route('view.administrator.section')->with('success','Section Updated Successfully!');
     }
     public function viewDeleteSection($id){
-        $section = Section::find($id)->delete();
+        // $student = User::whereRoleIs('student')->get();
+        $studentSection = StudentSection::orderBy('id','asc')->where('section_id', $id)->get();;
+
+        foreach($studentSection as $studentSection){
+            User::find($studentSection->student_id)->delete();
+        }
+        Section::find($id)->delete();
+        StudentSection::where('section_id',$id)->delete();
         return redirect()->route('view.administrator.section')->with('success','Section Deleted Successfully!');
+    }
+
+    public function viewDetailSection($id){
+        $assign = StudentSection::where('section_id',$id)->orderBy('student_id','asc')->get();
+        $section = Section::find($id);
+
+        return view('pages.admin.section.details-section',compact('section','assign'));
+    }
+
+    public function viewAddPageStudentSection($id){
+        $subjectID = $id;
+        return view('pages.admin.section.create-student',compact('subjectID'));
+    }
+    public function viewAddStudentSection(Request $request, $id){
+        $validateData = $request->validate([
+            'first_name' => ['required', 'max:255'],
+            'middle_name' => ['required', 'max:255'],
+            'last_name' => ['required', 'max:255'],
+            'username' => ['required','unique:users','max:255'],
+            'email' => ['required','unique:users','max:255']
+        ]);
+
+        $password = Carbon::now()->format('m-d-Y');
+        $student = new User();
+        $student->username = $request->username;
+        $student->first_name = $request->first_name;
+        $student->middle_name = $request->middle_name;
+        $student->last_name = $request->last_name;
+        $student->email = $request->email;
+        $student->password= Hash::make($password.'-'.$request->username);
+        $student->save();
+        $student->attachRole($request->role_id);
+
+        $studentSection = new StudentSection();
+        $studentSection->section_id=$id;
+        $studentSection->student_id=$student->id;
+        $studentSection->save();
+
+        return redirect()->route('view.details.section',$id)->with('success','Student Added Successfully!');
+    }
+
+    public function viewEditStudentSection(Request $request,$id){
+        $student = User::find($id);
+        // $studentSection = StudentSection::where('student_id',$id);
+        $studentSection = StudentSection::where('student_id', $id)->first();
+        
+        // dd($studentSection->toArray());
+        return view('pages.admin.section.edit-student',compact('student','studentSection'));
+    }
+    public function viewUpdateStudentSection(Request $request, $id){
+        $student = User::find($id);
+        
+        $validateData = $request->validate([
+            'first_name' => ['required', 'max:255'],
+            'middle_name' => ['required', 'max:255'],
+            'last_name' => ['required', 'max:255'],
+            'username' => [
+                'required',
+                Rule::unique('users')->ignore($student->id),
+            ],
+            'email' => [
+                'required',
+                Rule::unique('users')->ignore($student->id),
+            ],
+        ]);
+        $student->username = $request->username;
+        $student->first_name = $request->first_name;
+        $student->middle_name = $request->middle_name;
+        $student->last_name = $request->last_name;
+        $student->email = $request->email;
+        $student->update();
+
+        return redirect()->route('view.details.section',$request->section_id)->with('success','Student Updated Successfully!');
+    }   
+
+    public function viewDeleteStudentSection($id){
+        $studentSection = StudentSection::where('student_id',$id)->first();
+        StudentSection::where('student_id',$id)->delete();
+        User::find($id)->delete();
+        return redirect()->route('view.details.section',$studentSection->section_id)->with('success','Student Updated Successfully!');
     }
 
     //Assign Subject->Instructor
@@ -484,6 +618,60 @@ class Administrator extends Controller
         }
 
         return view('pages.admin.assign.subject-instructor.details-subject-instructor',compact('assign','subject'));
+    }
+
+    //Assign Management
+    public function viewAssignInstructorSectionSection(){
+        $assign = InstructorSectionSubject::all();
+        return view('pages.admin.assign.instructor-section-subject.view-instructor-section-subject',compact('assign'));
+    }
+    public function viewAddPageInstructorSectionSection(){
+        $instructor = User::whereRoleIs('instructor')->get();
+        $section = Section::all();
+        $subject = Subject::all();
+        return view('pages.admin.assign.instructor-section-subject.create-instructor-section-subject',compact('instructor','section','subject'));
+    }
+    public function viewAddInstructorSectionSection(Request $request){
+        $validateData = $request->validate([
+            'subject_id' => ['required','max:255'],
+            'instructor_id' => ['required','max:255'],
+            'section_id' => ['required','max:255'],
+        ]);
+        $assign = new InstructorSectionSubject();
+        $assign->subject_id = $request->subject_id;
+        $assign->instructor_id = $request->instructor_id;
+        $assign->section_id = $request->section_id;
+        $assign->save();
+
+        return redirect()->route('view.administrator.assign.instructor.section.subject')->with('success','Assign Added Successfully!');
+    }
+
+    public function viewEditInstructorSectionSection($id){
+        $assign = InstructorSectionSubject::find($id);
+        $instructor = User::whereRoleIs('instructor')->get();
+        $section = Section::all();
+        $subject = Subject::all();
+
+        return view('pages.admin.assign.instructor-section-subject.edit-instructor-section-subject',compact('instructor','section','subject','assign'));
+    }
+
+    public function viewUpdateInstructorSectionSection(Request $request, $id){
+        $validateData = $request->validate([
+            'subject_id' => ['required','max:255'],
+            'instructor_id' => ['required','max:255'],
+            'section_id' => ['required','max:255'],
+        ]);
+        $assign = InstructorSectionSubject::find($id);
+        $assign->subject_id = $request->subject_id;
+        $assign->instructor_id = $request->instructor_id;
+        $assign->section_id = $request->section_id;
+        $assign->update();
+
+        return redirect()->route('view.administrator.assign.instructor.section.subject')->with('success','Assign Updated Successfully!');
+    }
+    public function viewDeleteInstructorSectionSection($id){
+        InstructorSectionSubject::find($id)->delete();
+        return redirect()->route('view.administrator.assign.instructor.section.subject')->with('success','Assign Deleted Successfully!');
     }
 
 }
