@@ -206,6 +206,7 @@ class Instructor extends Controller
     public function viewDropStudentSection($student_id,$section_id,$subject_id){
         $drop = new Drop();
         $drop->student_id = $student_id;
+        $drop->section_id = $section_id;
         $drop->save();
 
         return redirect()->to('instructor/assign/section-subject/details/'.$section_id.'/'.$subject_id)->with('success','Student Drop Successfully!');
