@@ -54,6 +54,7 @@ class Instructor extends Controller
         $student = $assign->toArray();
         $irregs = $irregular->toArray();
         $studs = array();
+
         for($i=0;$i<count($student);$i++){
             for($y=0;$y<count($irregs);$y++){
                 if($student[$i]['student_id']==$irregs[$y]['student_id'] && $irregs[$y]['subject_id']!=$subject_id && $irregs[$y]['instructor_id']!=Auth::id() && $irregs[$y]['section_id']==$section_id){
@@ -71,7 +72,9 @@ class Instructor extends Controller
         $student = $assign->toArray();
         $irregs = $irregular->toArray();
         $drops = $drop->toArray();
-        // dd($assign->toArray());
+
+
+        
         for($i=0;$i<count($student);$i++){
             array_push($status, 'Regular');
         }
@@ -109,6 +112,28 @@ class Instructor extends Controller
         $subjectID = $subject_id;
         $sectionID = $section_id;
         $assign = User::whereRoleIs('student')->get();
+        $studentSection = StudentSection::where('section_id',$section_id)->get();
+
+        $assigns = $assign->toArray();
+        $studentSections = $studentSection->toArray();
+        $studentRemove = array();
+
+
+        for($i=0;$i<count($studentSections);$i++){
+            // array_push($studentRemove,$studentSections[$i]['student_id']);
+            $remove = $studentSections[$i]['student_id'];
+            $key = $assign->search(function($item,) use($remove){
+                return $item->id == $remove;
+            });
+            $assign->pull($key);
+            
+        }
+        
+        
+        
+        $assign = $assign->values();
+
+        
         return view('pages.instructor.create-student',compact('subjectID','sectionID','assign'));
     }
     public function viewAddStudentSection(Request $request, $section_id,$subject_id){
@@ -232,6 +257,12 @@ class Instructor extends Controller
             StudentSection::where('student_id',$student[$i]['student_id'])->delete();
         }
         return redirect()->route('view.instructor.section.subject')->with('success','Assign Deleted Successfully!');
+    }
+
+    public function viewRemoveIrregStudent($student_id,$section_id,$subject_id){
+        Irregular::where('student_id',$student_id)->where('subject_id',$subject_id)->where('instructor_id',Auth::id())->where('section_id',$section_id)->delete();
+        StudentSection::where('student_id',$student_id)->where('section_id',$section_id)->delete();
+        return redirect()->to('instructor/assign/section-subject/details/'.$section_id.'/'.$subject_id)->with('success','Irregular Remove Successfully!');
     }
 
     //Announcement

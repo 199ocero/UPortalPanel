@@ -64,6 +64,7 @@
 
                                         <td><span class="badge badge-info">Irregular</span></td>
                                         <td>
+                                            <a href="{{url('instructor/section/remove-student/'.$assign['student']['id'].'/'.$section->id.'/'.$subject->id)}}" class="btn btn-info btn-sm text-white">Remove</a>
                                             <a href="{{url('instructor/section/drop-student/'.$assign['student']['id'].'/'.$section->id.'/'.$subject->id)}}" class="btn btn-secondary btn-sm text-white">Drop</a>
                                             <a href="{{url('instructor/section/edit-student/'.$assign['student']['id'].'/'.$section->id)}}" class="btn btn-primary btn-sm text-white">Edit</a>
                                             <a href="{{url('instructor/section/delete-student/'.$assign['student']['id'].'/'.$section->id.'/'.$subject->id)}}" class="btn btn-danger btn-sm text-white">Delete</a>

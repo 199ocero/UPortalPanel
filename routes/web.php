@@ -155,7 +155,7 @@ Route::group(['middleware' => ['auth', 'role:instructor']], function() {
         Route::get('/section/undrop-student/{student_id}/{section_id}/{subject_id}',[Instructor::class,'viewUndropStudentSection'])->name('view.instructor.student.undrop.section');
         Route::get('/section/add-irregular/{section_id}/{subject_id}/{id}',[Instructor::class,'viewAddIrregularStudentSection'])->name('view.instructor.student.add.irregular.section');
         Route::post('/section/add-student/',[Instructor::class,'viewAddInstructorSectionSubject'])->name('view.add.instructor.section.subject');
-
+        Route::get('/section/remove-student/{student_id}/{section_id}/{subject_id}',[Instructor::class,'viewRemoveIrregStudent']);
         //View Announcement
         Route::get('/announcement/view/{section_id}/{subject_id}',[Instructor::class,'viewAnnouncement'])->name('view.announcement');
 
