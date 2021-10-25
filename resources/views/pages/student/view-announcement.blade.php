@@ -20,18 +20,29 @@
                             <th scope="col">Activity Title</th>
                             <th scope="col">Section</th>
                             <th scope="col">Subject</th>
+                            <th scope="col">Status</th>
                             <th scope="col">Action</th>
                           </tr>
                         </thead>
                         <tbody>
                             @php($i=1)
+                            @php($x=0)
                             @foreach ($announcement as $announcement)
                                 <tr>
-                                    <th scope="row">1</th>
+                                    <th scope="row">{{$i++}}</th>
                                     <td>{{$announcement->deadline->format('F j, Y')}}</td>
                                     <td>{{$announcement->deadline->format('h:i A')}}</td>
                                     <td>{{$announcement->act_title}}</td>
+                                    <td>{{$announcement['section']['section']}}</td>
                                     <td>{{$announcement['subject']['subject']}}</td>
+                                    
+                                    @if ($status[$x]=='Irregular')
+                                        <td><span class="badge badge-info">Irregular</span></td>
+                                        @php($x++)
+                                    @else
+                                        <td><span class="badge badge-success">Regular</span></td>
+                                        @php($x++)
+                                    @endif
                                     <td>
                                         <a href="" class="btn btn-primary btn-sm text-white">Details</a> 
                                     </td>

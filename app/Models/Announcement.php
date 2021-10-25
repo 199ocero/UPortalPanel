@@ -24,4 +24,7 @@ class Announcement extends Model
      public function subject(){
         return $this->belongsTo(Subject::class,'subject_id','id');
     }
+    public function section(){
+        return $this->belongsTo(Section::class,'section_id','id');
+    }
 }
