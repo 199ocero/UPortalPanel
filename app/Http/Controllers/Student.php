@@ -32,23 +32,11 @@ class Student extends Controller
                     }
                 }
             }
-
-            // $announce = Announcement::where('section_id',$student[$i]['section_id'])->get();
-            // $announcement->push($announce[0]);
-
-            // $announces = Announcement::where('section_id',$student[$i]['section_id'])->get()->toArray();
-            // for($y=0;$y<count($irregular);$y++){
-            //     if($irregular[$y]['section_id']==$announces[0]['section_id'] && $irregular[$y]['subject_id']==$announces[0]['subject_id']){
-            //         array_push($status,'Irregular');
-            //         break;
-            //     }else{
-            //         array_push($status,'Regular');
-            //         break;
-            //     }
-            // }
         }
-        
-        // dd($status);
         return view('pages.student.view-announcement',compact('announcement','status'));
+    }
+    public function viewAnnouncementDetails($id){
+        $announcement = Announcement::find($id);
+        return view('pages.student.details-announcement',compact('announcement'));
     }
 }

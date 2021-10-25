@@ -473,6 +473,7 @@ class Administrator extends Controller
         $studentSection = StudentSection::where('student_id',$id)->first();
         StudentSection::where('student_id',$id)->delete();
         User::find($id)->delete();
+        Irregular::find($id)->delete();
         return redirect()->route('view.details.section',$studentSection->section_id)->with('success','Student Updated Successfully!');
     }
 

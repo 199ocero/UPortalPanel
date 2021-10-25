@@ -174,5 +174,6 @@ Route::group(['middleware' => ['auth', 'role:student']], function() {
 
         //CRUD Announcement
         Route::get('/announcement/view/',[Student::class,'viewAnnouncement'])->name('view.announcement');
+        Route::get('/announcement/details/{id}',[Student::class,'viewAnnouncementDetails'])->name('view.announcement.details');
     });
 });

@@ -35,8 +35,9 @@
                                     <td>{{$announcement->act_title}}</td>
                                     <td>{{$announcement['section']['section']}}</td>
                                     <td>{{$announcement['subject']['subject']}}</td>
-                                    
-                                    @if ($status[$x]=='Irregular')
+                                    @if(count($status)==0)
+                                        <td><span class="badge badge-success">Regular</span></td>
+                                    @elseif ($status[$x]=='Irregular')
                                         <td><span class="badge badge-info">Irregular</span></td>
                                         @php($x++)
                                     @else
@@ -44,7 +45,7 @@
                                         @php($x++)
                                     @endif
                                     <td>
-                                        <a href="" class="btn btn-primary btn-sm text-white">Details</a> 
+                                        <a href="{{url('student/announcement/details/'.$announcement->id)}}" class="btn btn-primary btn-sm text-white">Details</a> 
                                     </td>
                                 </tr>
                             @endforeach
