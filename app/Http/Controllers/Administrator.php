@@ -440,8 +440,8 @@ class Administrator extends Controller
         // $studentSection = StudentSection::where('student_id',$id);
         $studentSection = StudentSection::where('student_id', $id)->first();
         
-        dd($studentSection->toArray());
-        // return view('pages.admin.section.edit-student',compact('student','studentSection'));
+        // dd($studentSection->toArray());
+        return view('pages.admin.section.edit-student',compact('student','studentSection'));
     }
     public function viewUpdateStudentSection(Request $request, $id){
         $student = User::find($id);
