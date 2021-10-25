@@ -19,7 +19,6 @@
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" integrity="sha512-vKMx8UnXk60zUwyUnUPM3HbQo8QfmNx7+ltw8Pm5zLusl1XIfwcxo8DbWCqMGKaWeNxWA8yrx5v3SaVpMvR3CA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.14/dist/css/bootstrap-select.min.css">
         
-        
         @livewireStyles
 
         <!-- Scripts -->
@@ -68,5 +67,13 @@
         @yield('scripts.admin.assign.student-subject.edit')
         @yield('scripts.admin.assign.instructor-section-subject')
         @yield('scripts.admin.assign.instructor-section-subject.create')
+        @yield('scripts.instructor.section.subject')
+        @yield('scripts.instructor.section.subject.details')
+        @yield('scripts.instructor.section.subject.irregular')
+        @yield('scripts.instructor.section.subject.announcement')
+        @yield('scripts.instructor.section.subject.announcement.create')
+        @yield('scripts.instructor.section.subject.announcement.edit')
+        @yield('scripts.student.section.subject.announcement')
+        
     </body>
 </html>

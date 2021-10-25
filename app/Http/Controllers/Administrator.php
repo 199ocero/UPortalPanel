@@ -3,21 +3,24 @@
 namespace App\Http\Controllers;
 
 use Carbon\Carbon;
+use App\Models\Drop;
 use App\Models\User;
 use App\Models\Section;
 use App\Models\Subject;
+use App\Models\Irregular;
 use App\Imports\UsersImport;
 use Illuminate\Http\Request;
 use App\Imports\StudentImport;
+use App\Imports\SubjectImport;
 use App\Models\StudentSection;
 use App\Models\SubjectStudent;
 use Illuminate\Validation\Rule;
 use App\Imports\InstructorImport;
-use App\Models\InstructorSectionSubject;
 use App\Models\InstructorSubject;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Models\InstructorSectionSubject;
 
 class Administrator extends Controller
 {
@@ -214,6 +217,14 @@ class Administrator extends Controller
         return redirect()->route('view.administrator.subject')->with('success','Subject Deleted Successfully!');
     }
 
+    public function uploadExcelSubject(Request $request){
+        $file = $request->file('file')->store('import');
+
+        Excel::import(new SubjectImport,$file);
+
+        return redirect()->route('view.administrator.subject')->with('success','Subject Added Successfully!');
+    }
+
     //Section
     public function viewSection(){
         $studentSection = StudentSection::select('section_id')->groupBy('section_id')->get();
@@ -225,10 +236,11 @@ class Administrator extends Controller
             'section' => ['required','unique:sections', 'max:255'],
             'file' => ['required'],
         ]);
+        $student = User::whereRoleIs('student')->get();
         $file = $request->file('file')->store('import');
         $studentList = (new StudentImport)->toArray($file);
         Excel::import(new StudentImport,$file);
-        $student = User::whereRoleIs('student')->get();
+        
         $studentSectionList = StudentSection::all();
 
         if($studentSectionList->isEmpty()){
@@ -236,6 +248,7 @@ class Administrator extends Controller
             $section->section = $request->section;
             $section->save();
 
+            $student = User::whereRoleIs('student')->get();
             for($y=0;$y<count($studentList[0]);$y++){
                 $studentSection = new StudentSection();
                 $studentSection->section_id=$section->id;
@@ -249,21 +262,59 @@ class Administrator extends Controller
             }
             return redirect()->route('view.administrator.section')->with('success','Section and Student Added Successfully!');
 
-        }else{
-            $section = new Section();
-            $section->section = $request->section;
-            $section->save();
-
+        }
+        else{
+            $studentUsername = array();
+            $studentUsernameF = array();
             for($y=0;$y<count($studentList[0]);$y++){
 
-                $studentUsername = User::where('username', $studentList[0][$y]['username'])->first();
-                
-                $studentID = StudentSection::where('student_id', $studentUsername->id)->first();
+                array_push($studentUsernameF, $studentList[0][$y]['username']);
+                for($i=0;$i<count($student);$i++){
+                    if($student[$i]['username']==$studentList[0][$y]['username']){
+                        array_push($studentUsername, $studentList[0][$y]['username']);
+                    }
+                }
+            }
+            $unique = array_diff($studentUsernameF,$studentUsername);
+            $uniqueUsername = array_values($unique);
+            // dd($studentUsernameF);
 
-                
-                if($studentID==null){
+            if($unique==NULL){
+                return redirect()->route('view.administrator.section')->with('failed','All of student records are already registerd!');
+            }elseif(count($uniqueUsername)<count($studentUsernameF)){
+
+                // dd($uniqueUsername[0]);
+                $section = new Section();
+                $section->section = $request->section;
+                $section->save();
+
+                $student = User::whereRoleIs('student')->get();
+
+                for($y=0;$y<count($uniqueUsername);$y++){
+                    
                     $studentSection = new StudentSection();
                     $studentSection->section_id=$section->id;
+                    
+                    for($i=0;$i<count($student);$i++){
+                        if($student[$i]['username']==$uniqueUsername[$y]){
+                            $studentSection->student_id=$student[$i]['id'];
+                        }
+                    }
+                    $studentSection->save();
+                }
+                return redirect()->route('view.administrator.section')->with('success','Some of student records are already registerd!');
+            }
+            else{
+                $section = new Section();
+                $section->section = $request->section;
+                $section->save();
+
+                $student = User::whereRoleIs('student')->get();
+
+                for($y=0;$y<count($studentList[0]);$y++){
+                    $studentSection = new StudentSection();
+                    $studentSection->section_id=$section->id;
+
                     for($i=0;$i<count($student);$i++){
                         if($student[$i]['username']==$studentList[0][$y]['username']){
                             $studentSection->student_id=$student[$i]['id'];
@@ -271,11 +322,10 @@ class Administrator extends Controller
                     }
                     
                     $studentSection->save();
-                    
                 }
-                // echo $studentList[0][$y]['username']."\n";
+                return redirect()->route('view.administrator.section')->with('success','Section and student registered successfully!');
             }
-            return redirect()->route('view.administrator.section')->with('failed','Some of student records are already registerd!');
+            
         }
     }
     public function viewEditSection($id){
@@ -310,10 +360,47 @@ class Administrator extends Controller
     }
 
     public function viewDetailSection($id){
-        $assign = StudentSection::where('section_id',$id)->orderBy('student_id','asc')->get();
+        $assign = StudentSection::where('section_id',$id)->get();
         $section = Section::find($id);
+        $drop = Drop::all();
+        $irregular = Irregular::all();
 
-        return view('pages.admin.section.details-section',compact('section','assign'));
+
+        $status = array();
+        $student = $assign->toArray();
+        $irregs = $irregular->toArray();
+        $drops = $drop->toArray();
+        
+        for($i=0;$i<count($student);$i++){
+            array_push($status, 'Regular');
+        }
+        
+        for($i=0;$i<count($student);$i++){
+            
+            for($y=0;$y<count($irregs);$y++){
+                if($student[$i]['student_id']==$irregs[$y]['student_id']){
+                    if($student[$i]['section_id']==$irregs[$y]['section_id']){
+                        $status[$i]='Irregular';
+                        break;
+                    }
+                    
+                }
+            }
+        }
+        for($i=0;$i<count($student);$i++){
+            
+            for($y=0;$y<count($drops);$y++){
+                if($student[$i]['student_id']==$drops[$y]['student_id']){
+                    if($student[$i]['section_id']==$drops[$y]['section_id']){
+                        $status[$i]='Drop';
+                        break;
+                    }
+                    
+                }
+            }
+        }
+
+        return view('pages.admin.section.details-section',compact('section','assign','status'));
     }
 
     public function viewAddPageStudentSection($id){
@@ -348,13 +435,13 @@ class Administrator extends Controller
         return redirect()->route('view.details.section',$id)->with('success','Student Added Successfully!');
     }
 
-    public function viewEditStudentSection(Request $request,$id){
+    public function viewEditStudentSection($id){
         $student = User::find($id);
         // $studentSection = StudentSection::where('student_id',$id);
         $studentSection = StudentSection::where('student_id', $id)->first();
         
-        // dd($studentSection->toArray());
-        return view('pages.admin.section.edit-student',compact('student','studentSection'));
+        dd($studentSection->toArray());
+        // return view('pages.admin.section.edit-student',compact('student','studentSection'));
     }
     public function viewUpdateStudentSection(Request $request, $id){
         $student = User::find($id);
@@ -669,6 +756,7 @@ class Administrator extends Controller
 
         return redirect()->route('view.administrator.assign.instructor.section.subject')->with('success','Assign Updated Successfully!');
     }
+    
     public function viewDeleteInstructorSectionSection($id){
         InstructorSectionSubject::find($id)->delete();
         return redirect()->route('view.administrator.assign.instructor.section.subject')->with('success','Assign Deleted Successfully!');

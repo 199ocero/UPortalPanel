@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Student;
+use App\Http\Controllers\Instructor;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Administrator;
 use App\Http\Controllers\SuperAdministrator;
@@ -74,7 +76,9 @@ Route::group(['middleware' => ['auth', 'role:administrator']], function() {
         Route::post('/subject/update/{id}',[Administrator::class,'viewUpdateSubject'])->name('view.update.subject');
         Route::get('/subject/delete/{id}',[Administrator::class,'viewDeleteSubject'])->name('view.delete.subject');
 
-
+        //Instructor Excel
+        Route::post('/subject/excel',[Administrator::class,'uploadExcelSubject']);
+        
         //View-Section
         Route::get('/section/view',[Administrator::class,'viewSection'])->name('view.administrator.section');
 
@@ -89,7 +93,7 @@ Route::group(['middleware' => ['auth', 'role:administrator']], function() {
         Route::get('/section/edit-student/{id}',[Administrator::class,'viewEditStudentSection'])->name('view.student.edit.section');
         Route::post('/section/update-student/{id}',[Administrator::class,'viewUpdateStudentSection'])->name('view.student.update.section');
         Route::get('/section/delete-student/{id}',[Administrator::class,'viewDeleteStudentSection'])->name('view.student.delete.section');
-
+        
 
         //View-Assign Subject->Instructor
         Route::get('/assign/subject-instructor/view',[Administrator::class,'viewAssignSubjectInstructor'])->name('view.administrator.assign.subject.instructor');
@@ -117,16 +121,58 @@ Route::group(['middleware' => ['auth', 'role:administrator']], function() {
 
         //Assign Management
         
-        //View-Assign Subject->Instructor
+        //View-Assign Subject->Instructor->Section
         Route::get('/assign/instructor-section-subject/view',[Administrator::class,'viewAssignInstructorSectionSection'])->name('view.administrator.assign.instructor.section.subject');
         Route::get('/assign/add/instructor-section-subject/view',[Administrator::class,'viewAddPageInstructorSectionSection'])->name('view.assign.subject.student.add');
         
 
-        //CRUD-Section
+        //CRUD-Subject->Instructor->Section
         Route::post('/assign/instructor-section-subject/add',[Administrator::class,'viewAddInstructorSectionSection'])->name('view.add.instructor.section.subject');
         Route::get('/assign/instructor-section-subject/edit/{id}',[Administrator::class,'viewEditInstructorSectionSection'])->name('view.edit.instructor.section.subject');
         Route::post('/assign/instructor-section-subject/update/{id}',[Administrator::class,'viewUpdateInstructorSectionSection'])->name('view.update.instructor.section.subject');
         Route::get('/assign/instructor-section-subject/delete/{id}',[Administrator::class,'viewDeleteInstructorSectionSection'])->name('view.delete.instructor.section.subject');
         Route::get('/assign/instructor-section-subject/details/{id}',[Administrator::class,'viewDetailsPageInstructorSectionSection'])->name('view.details.instructor.section.subject');
+    });
+});
+
+Route::group(['middleware' => ['auth', 'role:instructor']], function() { 
+    Route::prefix('instructor')->group(function(){
+        //View
+        Route::get('assign/section-subject/view',[Instructor::class,'viewInstructorSectionSubject'])->name('view.instructor.section.subject');
+
+        //View-Subject->Instructor->Section
+        Route::get('/assign/section-subject/delete/{id}/{section_id}/{subject_id}',[Instructor::class,'viewDeleteInstructorSectionSubject'])->name('view.delete.instructor.section.subject');
+        Route::get('/assign/section-subject/details/{section_id}/{subject_id}',[Instructor::class,'viewDetailsPageInstructorSectionSubject'])->name('view.details.instructor.section.subject');
+
+
+        //CRUD-Student
+        Route::get('/section/add/student/{section_id}/{subject_id}',[Instructor::class,'viewAddPageStudentSection'])->name('view.instructor.student.section');
+        Route::post('/section/add-student/{section_id}/{subject_id}',[Instructor::class,'viewAddStudentSection'])->name('view.instructor.student.add.section');
+        Route::get('/section/edit-student/{student_id}/{section_id}',[Instructor::class,'viewEditStudentSection'])->name('view.instructor.student.edit.section');
+        Route::post('/section/update-student/{student_id}/{section_id}',[Instructor::class,'viewUpdateStudentSection'])->name('view.instructor.student.update.section');
+        Route::get('/section/delete-student/{student_id}/{section_id}/{subject_id}',[Instructor::class,'viewDeleteStudentSection'])->name('view.instructor.student.delete.section');
+        Route::get('/section/drop-student/{student_id}/{section_id}/{subject_id}',[Instructor::class,'viewDropStudentSection'])->name('view.instructor.student.drop.section');
+        Route::get('/section/undrop-student/{student_id}/{section_id}/{subject_id}',[Instructor::class,'viewUndropStudentSection'])->name('view.instructor.student.undrop.section');
+        Route::get('/section/add-irregular/{section_id}/{subject_id}/{id}',[Instructor::class,'viewAddIrregularStudentSection'])->name('view.instructor.student.add.irregular.section');
+        Route::post('/section/add-student/',[Instructor::class,'viewAddInstructorSectionSubject'])->name('view.add.instructor.section.subject');
+
+        //View Announcement
+        Route::get('/announcement/view/{section_id}/{subject_id}',[Instructor::class,'viewAnnouncement'])->name('view.announcement');
+
+        //CRUD Announcement
+        Route::get('/announcement/add/view/{section_id}/{subject_id}',[Instructor::class,'viewAddPageAnnouncement'])->name('view.add.page.announcement');
+        Route::post('/announcement/add/{section_id}/{subject_id}',[Instructor::class,'viewAddAnnouncement'])->name('view.add.announcement');
+        Route::get('/announcement/edit/{id}',[Instructor::class,'viewEditAnnouncement'])->name('view.edit.announcement');
+        Route::post('/announcement/update/{section_id}/{subject_id}/{id}',[Instructor::class,'viewUpdateAnnouncement'])->name('view.update.announcement');
+        Route::get('/announcement/delete/{section_id}/{subject_id}/{id}',[Instructor::class,'viewDeleteAnnouncement'])->name('view.delete.announcement');
+    });
+});
+
+Route::group(['middleware' => ['auth', 'role:student']], function() { 
+    Route::prefix('student')->group(function(){
+        
+
+        //CRUD Announcement
+        Route::get('/announcement/view/',[Student::class,'viewAnnouncement'])->name('view.announcement');
     });
 });

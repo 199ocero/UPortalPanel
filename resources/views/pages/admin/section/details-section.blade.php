@@ -13,7 +13,7 @@
                     <div class="mb-3">
                         <div class="row">
                             <div class="col-md-10">
-                                <h4>Student Assigned in this Section - {{$section->section}}</h4>
+                                <h4>Student Assigned in this Section - {{$section['section']}}</h4>
                             </div>
                             <div class="col-md-2">
                                 <a href="{{url('administrator/section/add/student/'.$section->id)}}" class="btn btn-primary float-right">Add Student</a>
@@ -26,22 +26,37 @@
                         <thead>
                           <tr>
                             <th scope="col">#</th>
+                            <th scope="col">Username</th>
                             <th scope="col">First Name</th>
                             <th scope="col">Middle Name</th>
                             <th scope="col">Last Name</th>
+                            <th scope="col">Created</th>
                             <th scope="col">Status</th>
                             <th scope="col">Action</th>
                           </tr>
                         </thead>
                         <tbody>
                             @php($i=1)
+                            @php($x=0)
                             @foreach ($assign as $assign)
                                 <tr>
                                     <th scope="row">{{$i++}}</th>
+                                    <td>{{$assign['student']['username']}}</td>
                                     <td>{{$assign['student']['first_name']}}</td>
                                     <td>{{$assign['student']['middle_name']}}</td>
                                     <td>{{$assign['student']['last_name']}}</td>
-                                    <td><span class="badge badge-success">Active</span></td>
+                                    <td>{{$assign['student']['created_at']->format('m-d-Y')}}</td>
+
+                                    @if($status[$x]=='Regular')
+                                        <td><span class="badge badge-success">Regular</span></td>
+                                        @php($x++)
+                                    @elseif($status[$x]=='Drop')
+                                        <td><span class="badge badge-danger">Drop</span></td>
+                                        @php($x++)
+                                    @else
+                                        <td><span class="badge badge-info">Irregular</span></td>
+                                        @php($x++)
+                                    @endif
                                     <td>
                                         <a href="{{url('administrator/section/edit-student/'.$assign['student']['id'])}}" class="btn btn-primary btn-sm text-white">Edit</a>
                                         <a href="{{url('administrator/section/delete-student/'.$assign['student']['id'])}}" class="btn btn-danger btn-sm text-white">Delete</a>

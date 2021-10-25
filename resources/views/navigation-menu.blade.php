@@ -32,20 +32,16 @@
                     <x-jet-nav-link href="{{route('view.administrator.subject')}}" :active="request()->routeIs('view.administrator.subject')">
                         {{ __('Subject') }}
                     </x-jet-nav-link>
-                    <x-jet-nav-link href="{{route('view.administrator.assign.instructor.section.subject')}}" :active="request()->routeIs('view.administrator.assign.instructor.section.subject')">
+                @endif
+                @if (Auth::user()->hasRole('instructor'))
+                    <x-jet-nav-link href="{{route('view.instructor.section.subject')}}" :active="request()->routeIs('view.instructor.section.subject')">
                         {{ __('Assign Management') }}
                     </x-jet-nav-link>
-                    
-                    {{-- <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                          Assign Management
-                        </a>
-                        <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                          <a class="dropdown-item" href="{{route('view.administrator.assign.subject.instructor')}}" :active="request()->routeIs('view.administrator.assign.subject.instructor')">Assign Subject->Instructor</a>
-                          <a class="dropdown-item" href="{{route('view.administrator.assign.subject.student')}}">Assign Student->Subject</a>
-                          <a class="dropdown-item" href="#">Assign Subject->Section</a>
-                        </div>
-                      </li> --}}
+                @endif
+                @if (Auth::user()->hasRole('student'))
+                    <x-jet-nav-link href="{{route('view.announcement')}}" :active="request()->routeIs('view.announcement')">
+                        {{ __('Announcement') }}
+                    </x-jet-nav-link>
                 @endif
                 
             </ul>

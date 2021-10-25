@@ -34,7 +34,6 @@
                                 <button type="submit" class="btn btn-primary text-white btn-block">Submit</button>
                                 
                             </div>
-                            <span class="text-danger">Note: If you upload file that is already registered in database, only the section name will be recorded. You need to delete the section and upload again with new file.</span>
                         </form>
                     </div>
                 </div>

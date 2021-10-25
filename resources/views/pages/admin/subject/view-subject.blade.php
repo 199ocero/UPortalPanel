@@ -8,6 +8,26 @@
 
     {{-- Subject Table --}}
         <div class="row justify-content-center">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-body">
+                        
+                            <form method="POST" action="{{url('administrator/subject/excel')}}" enctype="multipart/form-data">
+                                @csrf
+                                <div class="input-group mb-3">
+                                    <div class="input-group-prepend">
+                                    <button type="submit" class="btn btn-primary" type="button" disabled>Upload</button>
+                                    </div>
+                                    <div class="custom-file">                                                                                                                                                                               
+                                    <input type="file" class="custom-file-input" name="file" id="file_id">                                                                                                                           
+                                    <label class="custom-file-label" for="inputGroupFile03">Choose Excel File to Upload</label>
+                                    </div>                                                                                                                                                      
+                                </div>
+                            </form>
+                            <span class="text-info">Note: The duplicated subjects are not recorded ang being skip.</span>
+                    </div>
+                </div>
+            </div>
             <div class="col-md-4">
                 <div class="card mt-4">
                     <div class="card-body">
@@ -19,6 +39,7 @@
                                 @error('subject')
                                   <span class="text-danger">{{$message}}</span>
                                 @enderror
+                                
                             </div>
                             <div class="mt-3">
                                 <button type="submit" class="btn btn-primary text-white btn-block">Submit</button>
@@ -67,6 +88,22 @@
             $(document).ready( function () {
                 $('#subject_table_id').DataTable();
             } );
+        </script>
+        <script>
+            $('#file_id').on('change',function(){
+                //get the file name
+                var fileName = $(this).val();
+                //replace the "Choose a file" label
+                $(this).next('.custom-file-label').html(fileName);
+            });
+            $('input[type=file]').change(function(){
+                if($('input[type=file]').val()==''){
+                    $('button').attr('disabled',true)
+                } 
+                else{
+                $('button').attr('disabled',false);
+                }
+            });
         </script>
         @if(Session::has('success'))
             <script>
