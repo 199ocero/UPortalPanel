@@ -16,6 +16,7 @@ class CreateDropsTable extends Migration
         Schema::create('drops', function (Blueprint $table) {
             $table->id();
             $table->string('student_id');
+            $table->string('section_id');
             $table->timestamps();
         });
     }

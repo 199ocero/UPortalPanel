@@ -93,7 +93,7 @@ class Administrator extends Controller
 
     //Instructor Excel File
     public function uploadExcelInstructor(Request $request){
-        $file = $request->file('file')->store('import');
+        $file = $request->file('file');
 
         Excel::import(new InstructorImport,$file);
 
@@ -169,7 +169,7 @@ class Administrator extends Controller
 
     //Student Excel File
     public function uploadExcelStudent(Request $request){
-        $file = $request->file('file')->store('import');
+        $file = $request->file('file');
 
         Excel::import(new StudentImport,$file);
 
@@ -218,7 +218,7 @@ class Administrator extends Controller
     }
 
     public function uploadExcelSubject(Request $request){
-        $file = $request->file('file')->store('import');
+        $file = $request->file('file');
 
         Excel::import(new SubjectImport,$file);
 
@@ -237,7 +237,7 @@ class Administrator extends Controller
             'file' => ['required'],
         ]);
         $student = User::whereRoleIs('student')->get();
-        $file = $request->file('file')->store('import');
+        $file = $request->file('file');
         $studentList = (new StudentImport)->toArray($file);
         Excel::import(new StudentImport,$file);
         
