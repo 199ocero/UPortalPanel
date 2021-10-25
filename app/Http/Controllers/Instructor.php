@@ -82,8 +82,10 @@ class Instructor extends Controller
             
             for($y=0;$y<count($irregs);$y++){
                 if($student[$i]['student_id']==$irregs[$y]['student_id']){
-                    $status[$i]='Irregular';
-                    break;
+                    if($student[$i]['section_id']==$irregs[$y]['section_id']){
+                        $status[$i]='Irregular';
+                        break;
+                    }
                 }
             }
         }
@@ -91,8 +93,10 @@ class Instructor extends Controller
             
             for($y=0;$y<count($drops);$y++){
                 if($student[$i]['student_id']==$drops[$y]['student_id']){
-                    $status[$i]='Drop';
-                    break;
+                    if($student[$i]['section_id']==$drops[$y]['section_id']){
+                        $status[$i]='Drop';
+                        break;
+                    }
                 }
             }
         }
