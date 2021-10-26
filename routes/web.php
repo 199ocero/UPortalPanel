@@ -20,6 +20,11 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+//Chatbot
+Route::get('/botman', function () {
+    app('botman')->listen();
+});
+
 Route::middleware(['auth:sanctum', 'verified'])->get('/dashboard', function () {
     return view('dashboard');
 })->name('dashboard');
