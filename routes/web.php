@@ -21,7 +21,7 @@ Route::get('/', function () {
 });
 
 //Chatbot
-Route::get('/botman', function () {
+Route::post('/botman', function () {
     app('botman')->listen();
 });
 
