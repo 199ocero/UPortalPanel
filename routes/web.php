@@ -19,6 +19,7 @@ use App\Http\Controllers\SuperAdministrator;
 Route::get('/', function () {
     return view('welcome');
 });
+Route::match(['get', 'post'], '/botman', 'BotManController@handle');
 
 //Chatbot
 Route::post('/botman', function () {

@@ -6,6 +6,10 @@
     "license": "MIT",
     "require": {
         "php": "^7.3|^8.0",
+<<<<<<< HEAD
+        "botman/botman": "^2.6",
+=======
+>>>>>>> 582011b38d066b5b7d90aada2a6a93ce6fddde4f
         "botman/driver-facebook": "^1.11",
         "fruitcake/laravel-cors": "^2.0",
         "guzzlehttp/guzzle": "^7.0.1",
